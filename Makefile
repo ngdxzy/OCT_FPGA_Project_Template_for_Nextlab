@@ -24,21 +24,12 @@ HOST_SRC_DIR ?= host_src
 HOST_O_DIR ?= build/host
 
 HOST_COMMON_HEADER += $(HOST_SRC_DIR)/oct_fpga.hpp
-ifeq ($(INTERFACE), 01)
-	HOST_TX_OBJ += $(HOST_O_DIR)/host_sender_native.o
-	HOST_RX_OBJ += $(HOST_O_DIR)/host_receiver_native.o
-endif
-
-ifeq ($(INTERFACE), 10)
-	HOST_TX_OBJ += $(HOST_O_DIR)/host_sender_if1.o
-	HOST_RX_OBJ += $(HOST_O_DIR)/host_receiver_if1.o
-endif
-
-ifeq ($(INTERFACE), 11)
-	HOST_TX_OBJ += $(HOST_O_DIR)/host_sender_if3.o
-	HOST_RX_OBJ += $(HOST_O_DIR)/host_receiver_if3.o
-endif
 HOST_COMMON_OBJ += $(HOST_O_DIR)/fileops.o
+
+HOST_HEAD_OBJ += $(HOST_O_DIR)/head.o
+HOST_TAIL_OBJ += $(HOST_O_DIR)/tail.o
+HOST_NODE_OBJ += $(HOST_O_DIR)/node.o
+
 
 # Kernel Source Path, do not modify
 
@@ -50,9 +41,9 @@ BINARY_CONTAINER := $(patsubst $(KERNEL_SRC_DIR)/%,%,$(wildcard $(KERNEL_SRC_DIR
 
 BINARY_CONTAINER_KERNELS = $(addsuffix .kernels, $(BINARY_CONTAINER))
 
-HOST_TX_EXE = build/host/$(PRJ_NAME)_tx
-HOST_RX_EXE = build/host/$(PRJ_NAME)_rx
-
+HOST_HEAD_EXE = build/host/head_bin
+HOST_NODE_EXE = build/host/node_bin
+HOST_TAIL_EXE = build/host/tail_bin
 
 
 ################################################################################
@@ -75,10 +66,10 @@ BUILD_SUBDIRS += build
 # primary build targets
 #
 
-.PHONY: all clean host kernel link run kill
-all: $(BINARY_CONTAINER) $(HOST_TX_EXE) $(HOST_TX_EXE)
+.PHONY: all clean host kernel link run kill network
+all: $(BINARY_CONTAINER) $(HOST_HEAD_EXE) $(HOST_HEAD_EXE)
 
-host: $(HOST_TX_EXE) $(HOST_RX_EXE)
+host: $(HOST_HEAD_EXE) $(HOST_TAIL_EXE) $(HOST_NODE_EXE)
 
 
 kernel: $(BINARY_CONTAINER_KERNELS)
@@ -98,8 +89,8 @@ clean:
 	-$(RM) *.wcfg
 	-$(RM) *.protoinst
 	-$(RM) *.csv
-	-$(RM) $(HOST_TX_EXE)
-	-$(RM) $(HOST_RX_EXE)
+	-$(RM) $(HOST_HEAD_EXE)
+	-$(RM) $(HOST_TAIL_EXE)
 
 
 .PHONY: incremental
@@ -121,11 +112,15 @@ bit_container_%: $(KERNEL_SRC_DIR)/bit_container_%/Makefile
 	$(MAKE) -C $(KERNEL_SRC_DIR)/$(basename $@) link TARGET=$(TARGET)
 
 # bulid host finally
-$(HOST_TX_EXE): $(HOST_TX_OBJ) $(HOST_COMMON_OBJ)
+$(HOST_HEAD_EXE): $(HOST_HEAD_OBJ) $(HOST_COMMON_OBJ)
 	-@mkdir -p $(@D)
 	$(HOST_CXX) -o "$@" $(^) $(LDFLAGS)
 
-$(HOST_RX_EXE): $(HOST_RX_OBJ) $(HOST_COMMON_OBJ)
+$(HOST_TAIL_EXE): $(HOST_TAIL_OBJ) $(HOST_COMMON_OBJ)
+	-@mkdir -p $(@D)
+	$(HOST_CXX) -o "$@" $(^) $(LDFLAGS)
+
+$(HOST_NODE_EXE): $(HOST_NODE_OBJ) $(HOST_COMMON_OBJ)
 	-@mkdir -p $(@D)
 	$(HOST_CXX) -o "$@" $(^) $(LDFLAGS)
 
@@ -133,3 +128,6 @@ $(HOST_O_DIR)/%.o: $(HOST_SRC_DIR)/%.cpp $(HOST_COMMON_HEADER)
 	-@mkdir -p $(@D)
 	$(HOST_CXX) $(CXXFLAGS) -o "$@" "$<"
 
+
+network:
+	$(MAKE) -C host_src/networking

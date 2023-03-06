@@ -7,7 +7,7 @@ XILINX_XRT ?= /opt/xilinx/xrt
 XILINX_VIVADO ?= /tools/Xilinx/Vivado/2021.2
 XILINX_HLS_INCLUDES ?= /tools/Xilinx/Vitis_HLS/2021.2/include
 
-CONTAINER_ID := 0
+CONTAINER_ID := 2
 JOBS ?= 8
 
 # Platform path
@@ -17,7 +17,7 @@ VITIS_PLATFORM = xilinx_u280_xdma_201920_3
 TARGET ?= hw
 
 # Interface
-INTERFACE ?= 01
+INTERFACE ?= 11
 
 BUILD_DIR := ../../build/bit_container_$(CONTAINER_ID)
 
@@ -116,8 +116,7 @@ link: $(BINARY_CONTAINER)
 .PHONY: incremental
 incremental: all
 
-clean:
-	-@rm -rf $(BUILD_DIR)
+
 
 # build kernels first, automatic build all kernels
 $(KERNEL_O_DIR)/%.xo: %.cpp $(HW_KERNEL_HEADERS)

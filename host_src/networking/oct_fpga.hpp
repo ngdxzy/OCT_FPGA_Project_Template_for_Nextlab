@@ -15,6 +15,7 @@ typedef struct {
     uint32_t their_ip;
     uint16_t their_port;
     uint16_t my_port;
+    bool valid;
 } socket_type;
 
 // Number of bytes per UDP packet
@@ -119,10 +120,18 @@ public:
         uint32_t their_ip_offset = 0x10 + id * 8;
         uint32_t their_port_offset = their_ip_offset + 16 * 8;
         uint32_t my_port_offset = their_port_offset + 16 * 8;
+        uint32_t valid_offset = my_port_offset + 16 * 8;
 
         inst.write_register(UDP_OFFSET + their_ip_offset, socket_info.their_ip);
         inst.write_register(UDP_OFFSET + their_port_offset, socket_info.their_port);
         inst.write_register(UDP_OFFSET + my_port_offset, socket_info.my_port);
+        if (socket_info.valid){
+            inst.write_register(UDP_OFFSET + valid_offset, 0xFFFFFFFF);
+        }
+        else{
+            inst.write_register(UDP_OFFSET + valid_offset, 0);
+        }
+
         return 0;
     }
 

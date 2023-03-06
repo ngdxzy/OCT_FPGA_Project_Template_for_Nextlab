@@ -51,19 +51,28 @@ int main(int argc, char* argv[]){
     printf("There are %d hardware sockets.\n", num_of_sockets);
 
     // define user sockets 
-    socket_type T_receiver_socket;
+    socket_type receiver_socket;
+    socket_type sender_socket;
     
     // 192.168.1.1:50000 -> 192.168.1.2:60000
     
-    T_receiver_socket.their_ip = THEIR_IP_ADDR;
+    receiver_socket.their_ip = THEIR_IP_ADDR;
 
-    T_receiver_socket.their_port = 50000;
-    T_receiver_socket.my_port = 60000;
+    receiver_socket.their_port = 50000;
+    receiver_socket.my_port = 60000;
     
+    // 192.168.1.2:50000 -> 192.168.1.1:60000
+    
+    sender_socket.their_ip = THEIR_IP_ADDR;
 
-    network_inst.set_socket(0, T_receiver_socket);
+    sender_socket.their_port = 60000;
+    sender_socket.my_port = 50000;
+
+    network_inst.set_socket(0, receiver_socket);
+    network_inst.set_socket(1, sender_socket);
     
     network_inst.enable_socket(0);
+    network_inst.enable_socket(1);
     
     network_inst.arp_discover();
     
@@ -82,38 +91,6 @@ int main(int argc, char* argv[]){
         printf("Link is not active!\n");
     }
 
-    // user logic
-    uint32_t packet_size_in_byte = 1408;
-    // RX
-    xrt::kernel rxKernel = xrt::kernel(device, overlay_uuid, "rxkrnl");
-
-    char text_rx[1408];
-
-    xrt::bo rx_buffer = xrt::bo(device, 1408, rxKernel.group_id(0));
-
-    xrt::run rxKernel_run = xrt::run(rxKernel);
-
-    rxKernel_run.set_arg(0, rx_buffer) ;
-    rxKernel_run.set_arg(2, packet_size_in_byte) ;
-    rxKernel_run.set_arg(3, 0) ;
-
-    rxKernel_run.start();
-    
-    printf("All kernel started!\n");
-    
-
-    rxKernel_run.wait();
-
-    printf("All kernel finished!\n");
-    rx_buffer.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-    rx_buffer.read(text_rx);
-    
-
-    printf("************************************************\n");
-    for (int i = 0; i < 1408; i++){
-        printf("%c", text_rx[i]);
-    }
-    printf("\n************************************************\n");
 
     getchar();
     return 0;
