@@ -114,7 +114,8 @@ int main(int argc, char* argv[]){
     
     printf("All kernel started!\n");
     
-
+    // the wait() is not called in case some data is lost and that will stuck the whole program.
+    // wait for 3 seconds and synchronize data back.
     // rxKernel_run.wait();
     sleep(3);
 

@@ -67,7 +67,7 @@ BUILD_SUBDIRS += build
 #
 
 .PHONY: all clean host kernel link run kill network
-all: $(BINARY_CONTAINER) $(HOST_HEAD_EXE) $(HOST_HEAD_EXE)
+all: $(BINARY_CONTAINER) $(HOST_HEAD_EXE) $(HOST_HEAD_EXE) network
 
 host: $(HOST_HEAD_EXE) $(HOST_TAIL_EXE) $(HOST_NODE_EXE)
 
