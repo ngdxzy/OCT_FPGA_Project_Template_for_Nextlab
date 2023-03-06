@@ -20,7 +20,7 @@ extern "C" {
 // destination: to dest
 void bridge(hls::stream<pkt>& stream_in, hls::stream<pkt>& stream_out){
 #pragma HLS interface ap_ctrl_none port=return
-#pragma HLS PIPELINE II=1 stype=frp
+#pragma HLS PIPELINE II=1 style=flp
 	pkt temp;
 	stream_in >> temp;
 	stream_out << temp;
