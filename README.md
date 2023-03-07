@@ -120,7 +120,7 @@ Head FPGA, sending and receiving data.
 ### bit_container_1
 Tail FPGA, looping back data.
 
-### bit_container_3
+### bit_container_2
 Node FPGA (in the middle), passing through the data.
 
 ## Infrastructure kernels
