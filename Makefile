@@ -23,7 +23,6 @@ INTERFACE ?= 01
 HOST_SRC_DIR ?= host_src
 HOST_O_DIR ?= build/host
 
-HOST_COMMON_HEADER += $(HOST_SRC_DIR)/oct_fpga.hpp
 HOST_COMMON_OBJ += $(HOST_O_DIR)/fileops.o
 
 HOST_HEAD_OBJ += $(HOST_O_DIR)/head.o

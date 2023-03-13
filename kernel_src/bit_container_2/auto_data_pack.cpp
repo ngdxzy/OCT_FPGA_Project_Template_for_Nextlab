@@ -38,14 +38,15 @@ void auto_data_pack(unsigned int destination, hls::stream<data_t>& stream_in, hl
         if (pkt_counter == 21){
             pkt_counter = 0;
             o_temp.last = 1;
+            got_data = false;
         }
         else{
             pkt_counter++;
             o_temp.last = 0;
+            got_data = true;
         }
         stream_out << o_temp;
         watching_dog = 0; 
-        got_data = true;
     }
     else{
         if (watching_dog == 1023){

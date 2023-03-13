@@ -6,7 +6,6 @@
 #include <experimental/xrt_ip.h>    // IP direct control
 #include <unistd.h>                 // sleep
 
-#include "oct_fpga.hpp"
 #include "fileops.h"
 
 // My IP address: 192.168.1.1 
@@ -16,6 +15,13 @@
 #define THEIR_IP_ADDR 0xC0A80102
 #define IP_GATEWAY 0xC0A801FF
 
+typedef struct userMetadata {
+    unsigned int     myIP;
+    unsigned int     theirIP;
+    unsigned short   myPort;
+    unsigned short   theirPort;
+    unsigned int     reserved;
+}MetaData;
 int main(int argc, char* argv[]){
     
     char* xclbinFilename;
@@ -47,15 +53,20 @@ int main(int argc, char* argv[]){
 
     xrt::uuid overlay_uuid = device.load_xclbin(xclbinFilename);
     
-    xrt::ip dp = xrt::ip(device, overlay_uuid, "auto_data_pack");
+    xrt::ip dp_0 = xrt::ip(device, overlay_uuid, "auto_data_pack:{auto_data_pack_0}");
+    xrt::ip dp_1 = xrt::ip(device, overlay_uuid, "auto_data_pack:{auto_data_pack_1}");
 
-    dp.write_register(0x10, 0);
+    dp_0.write_register(0x10, 2);
+    dp_1.write_register(0x10, 3);
+
     // user logic
     // TX
-    xrt::kernel txKernel = xrt::kernel(device, overlay_uuid, "txkrnl");
+    xrt::kernel txKernel_0 = xrt::kernel(device, overlay_uuid, "txkrnl:{txkrnl_0}");
+    xrt::kernel txKernel_1 = xrt::kernel(device, overlay_uuid, "txkrnl:{txkrnl_1}");
 
-    char* text_tx = readFile("./alice29.txt");
-    if (text_tx != NULL){
+    char* text_tx_0 = readFile("./alice29.txt");
+
+    if (text_tx_0 != NULL){
         printf("File alice29.txt read!\n");
         // printf("************************************************\n");
         // for (int i = 0; i < packet_size_in_byte;i++){
@@ -68,49 +79,73 @@ int main(int argc, char* argv[]){
         printf("Cannot find the file!\n");
         return -1;
     }
-    xrt::bo tx_buffer = xrt::bo(device, 4096, txKernel.group_id(0));
 
-    tx_buffer.write(text_tx);
-    tx_buffer.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    char* text_tx_1 = readFile("./ALICE29.txt");
 
-    xrt::run txKernel_run = xrt::run(txKernel);
+    if (text_tx_1 != NULL){
+        printf("File ALICE29.txt read!\n");
+        // printf("************************************************\n");
+        // for (int i = 0; i < packet_size_in_byte;i++){
+        //     printf("%c", text_tx[i]);
+        // }
+        // printf("\n");
+        // printf("************************************************\n");
+    }
+    else{
+        printf("Cannot find the file!\n");
+        return -1;
+    }
 
-    txKernel_run.set_arg(0, tx_buffer) ;
-    txKernel_run.set_arg(1, packet_size_in_byte) ;
+    xrt::bo tx_buffer_0 = xrt::bo(device, 16384, txKernel_0.group_id(0));
+    xrt::bo tx_buffer_1 = xrt::bo(device, 16384, txKernel_1.group_id(0));
 
-    
+    tx_buffer_0.write(text_tx_0);
+    tx_buffer_0.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
-    txKernel_run.start();
+    tx_buffer_1.write(text_tx_1);
+    tx_buffer_1.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+
+    xrt::run txKernel_0_run = xrt::run(txKernel_0);
+    xrt::run txKernel_1_run = xrt::run(txKernel_1);
+
+    txKernel_0_run.set_arg(0, tx_buffer_0) ;
+    txKernel_0_run.set_arg(1, packet_size_in_byte) ;
+
+    txKernel_1_run.set_arg(0, tx_buffer_1) ;
+    txKernel_1_run.set_arg(1, packet_size_in_byte) ;
+
+    txKernel_0_run.start();
+    txKernel_1_run.start();
     
     printf("All kernel started!\n");
     
-    txKernel_run.wait();
+    txKernel_0_run.wait();
+    txKernel_1_run.wait();
 
     printf("All kernel finished!\n");
-    
 
     // RX
-    xrt::kernel rxKernel = xrt::kernel(device, overlay_uuid, "rxkrnl");
+    xrt::kernel rxKernel_0 = xrt::kernel(device, overlay_uuid, "rxkrnl:{rxkrnl_0}");
+    xrt::kernel rxKernel_1 = xrt::kernel(device, overlay_uuid, "rxkrnl:{rxkrnl_1}");
 
-    char text_rx[16384];
-    unsigned int keep[16384 / 64];
-    unsigned int last[16384 / 64];
+    char text_rx_0[16384];
+    char text_rx_1[16384];
 
-    int keep_len = packet_size_in_byte >> 6;
-//    keep_len++;
+    xrt::bo rx_buffer_0 = xrt::bo(device, sizeof(text_rx_0), rxKernel_0.group_id(0));
+    xrt::bo rx_buffer_1 = xrt::bo(device, sizeof(text_rx_1), rxKernel_1.group_id(0));
 
-    xrt::bo rx_buffer = xrt::bo(device, sizeof(text_rx), rxKernel.group_id(0));
-    xrt::bo keep_buffer = xrt::bo(device, sizeof(keep), rxKernel.group_id(1));
-    xrt::bo last_buffer = xrt::bo(device, sizeof(last), rxKernel.group_id(2));
 
-    xrt::run rxKernel_run = xrt::run(rxKernel);
+    xrt::run rxKernel_0_run = xrt::run(rxKernel_0);
+    xrt::run rxKernel_1_run = xrt::run(rxKernel_1);
 
-    rxKernel_run.set_arg(0, rx_buffer) ;
-    rxKernel_run.set_arg(1, keep_buffer) ;
-    rxKernel_run.set_arg(2, last_buffer) ;
-    rxKernel_run.set_arg(3, packet_size_in_byte) ;
+    rxKernel_0_run.set_arg(0, rx_buffer_0) ;
+    rxKernel_0_run.set_arg(1, packet_size_in_byte) ;
 
-    rxKernel_run.start();
+    rxKernel_1_run.set_arg(0, rx_buffer_1) ;
+    rxKernel_1_run.set_arg(1, packet_size_in_byte) ;
+
+    rxKernel_0_run.start();
+    rxKernel_1_run.start();
     
     printf("All kernel started!\n");
     
@@ -120,33 +155,53 @@ int main(int argc, char* argv[]){
     sleep(3);
 
     printf("All kernel finished!\n");
-    rx_buffer.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-    rx_buffer.read(text_rx);
-    keep_buffer.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-    keep_buffer.read(keep);
-    last_buffer.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-    last_buffer.read(last);
+    rx_buffer_0.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+    rx_buffer_0.read(text_rx_0);
     
+    rx_buffer_1.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+    rx_buffer_1.read(text_rx_1);
 
     printf("************************************************\n");
     for (int i = 0; i < packet_size_in_byte; i++){
-        printf("%c", text_rx[i]);
+        printf("%c", text_rx_0[i]);
         if ((i > 0) && (i % 64 == 0)){
             printf("\n");
         }
     }
     printf("\n************************************************\n");
-    FILE* fp = fopen("./data_received.txt", "w");
+    for (int i = 0; i < packet_size_in_byte; i++){
+        printf("%c", text_rx_1[i]);
+        if ((i > 0) && (i % 64 == 0)){
+            printf("\n");
+        }
+    }
+    printf("\n************************************************\n");
+    FILE* fp = fopen("./data_received_0.txt", "w");
     if (fp == NULL){
         printf("Failed to open data_received.txt");
     }
     
-    for (int i = 0; i < keep_len; i++){
+    for (int i = 0; i < (packet_size_in_byte >> 6); i++){
         fprintf(fp, "Packet %02d: Text: |", i);
         for (int j = 0; j < 64; j++){
-            fprintf(fp, "%c", text_rx[i * 64 + j]);
+            fprintf(fp, "%c", text_rx_0[i * 64 + j]);
         }
-        fprintf(fp, "| dest: %02u | last: %u\n", keep[i], last[i]);
+        fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+
+    fp = fopen("./data_received_1.txt", "w");
+    if (fp == NULL){
+        printf("Failed to open data_received.txt");
+    }
+    
+    for (int i = 0; i < (packet_size_in_byte >> 6); i++){
+        fprintf(fp, "Packet %02d: Text: |", i);
+        for (int j = 0; j < 64; j++){
+            fprintf(fp, "%c", text_rx_1[i * 64 + j]);
+        }
+        fprintf(fp, "\n");
     }
 
     fclose(fp);

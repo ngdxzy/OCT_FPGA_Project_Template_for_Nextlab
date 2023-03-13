@@ -17,17 +17,7 @@ HOST_SRC_DIR ?= .
 HOST_O_DIR ?= ../../build/host
 
 HOST_COMMON_HEADER += $(HOST_SRC_DIR)/oct_fpga.hpp
-ifeq ($(INTERFACE), 01)
-	HOST_OBJ += $(HOST_O_DIR)/udp_setup_if0.o
-endif
-
-ifeq ($(INTERFACE), 10)
-	HOST_OBJ += $(HOST_O_DIR)/udp_setup_if1.o
-endif
-
-ifeq ($(INTERFACE), 11)
-	HOST_OBJ += $(HOST_O_DIR)/udp_setup_if3.o
-endif
+HOST_OBJ += $(HOST_O_DIR)/udp_setup.o
 
 HOST_EXE = $(HOST_O_DIR)/udp_setup
 

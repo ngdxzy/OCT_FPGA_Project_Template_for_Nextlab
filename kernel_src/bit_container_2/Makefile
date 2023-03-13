@@ -17,7 +17,7 @@ VITIS_PLATFORM = xilinx_u280_xdma_201920_3
 TARGET ?= hw
 
 # Interface
-INTERFACE ?= 11
+INTERFACE ?= 01
 
 BUILD_DIR := ../../build/bit_container_$(CONTAINER_ID)
 

@@ -43,20 +43,22 @@ to global memory via memory mapped interface */
 #define DWIDTH 512
 #define TDWIDTH 16
 
-typedef ap_axiu<DWIDTH, 1, 1, TDWIDTH> pkt;
+typedef ap_uint<DWIDTH> pkt;
 
+typedef struct userMetadata {
+    ap_uint<32>     myIP;
+    ap_uint<32>     theirIP;
+    ap_uint<16>     myPort;
+    ap_uint<16>     theirPort;
+}MetaData;
 
 extern "C" {
 void rxkrnl(
     ap_uint<DWIDTH> *out,     // Write only memory mapped
-    ap_uint<32> *keep,
-    ap_uint<32> *last,
     unsigned int     size,     // Size in bytes
     hls::stream<pkt> &n2k    // Internal Stream
 ) {
 #pragma HLS INTERFACE m_axi port = out offset = slave bundle = gmem
-#pragma HLS INTERFACE m_axi port = keep offset = slave bundle = gmem
-#pragma HLS INTERFACE m_axi port = last offset = slave bundle = gmem
 #pragma HLS INTERFACE axis port = n2k
 #pragma HLS INTERFACE s_axilite port = out
 #pragma HLS INTERFACE s_axilite port = size 
@@ -64,19 +66,11 @@ void rxkrnl(
 
 data_mover:
 	int i = 0;
-  	pkt v;
   	// Auto-pipeline is going to apply pipeline to this loop
   	for (unsigned int i = 0; i < ((size >> 6)); i++) {
 	    ap_uint<512> tmp;
-        ap_uint<32> tkeep;
-        ap_uint<32> tlast;
-		n2k.read(v);
-		tmp = v.data;
-        tkeep = v.dest;
-        tlast = v.last;
+		n2k.read(tmp);
         out[i] = tmp;
-        keep[i] = tkeep;
-        last[i] = tlast;
   	}
 
 }
