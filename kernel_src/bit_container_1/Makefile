@@ -91,7 +91,7 @@ ifneq ($(TARGET), hw)
 	KERNEL_EXT_CONFIG += -g
 endif
 
-HLS_IP_FOLDER  = $(shell readlink -f ../Base_IPs/synthesis_results_HMB)
+HLS_IP_FOLDER  = $(shell readlink -f ../Base_IPs/synthesis_results_HBM)
 BC_EXT_CONFIG += --user_ip_repo_paths
 BC_EXT_CONFIG += $(HLS_IP_FOLDER)
 

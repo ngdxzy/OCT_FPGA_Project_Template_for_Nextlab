@@ -20,41 +20,22 @@ typedef struct {
 
 // Number of bytes per UDP packet
 const unsigned int BYTES_PER_PACKET     = 1408;
+
 // ARP control registers in UDP kernel
-const unsigned int ARP_DISCOVERY        = 0x3010;
-const unsigned int ARP_IP_ADDR_OFFSET   = 0x3400;
-const unsigned int ARP_MAC_ADDR_OFFSET  = 0x3800;
-const unsigned int ARP_VALID_OFFSET     = 0x3100;
+const unsigned int ARP_DISCOVERY        = 0x1010;
+const unsigned int ARP_IP_ADDR_OFFSET   = 0x1400;
+const unsigned int ARP_MAC_ADDR_OFFSET  = 0x1800;
+const unsigned int ARP_VALID_OFFSET     = 0x1100;
+
 // Self network inforation registers
 const unsigned int IP_ADDR_OFFSET       = 0x0018;
 const unsigned int GATEWAY_OFFSET       = 0x001C;
 const unsigned int MAC_ADDR_OFFSET      = 0x0010;
-const unsigned int NUM_SOCKETS_HW       = 0x2210;
-const unsigned int UDP_OFFSET           = 0x2000;
-// constexpr std::size_t mac_address_offset = 0x0010;
-// constexpr std::size_t ip_address_offset = 0x0018;
-// constexpr std::size_t gateway_offset = 0x001C;
-// constexpr std::size_t arp_discovery_offset = 0x1010;
-// constexpr std::size_t arp_mac_addr_offset = 0x1800;
-// constexpr std::size_t arp_ip_addr_offset = 0x1400;
-// constexpr std::size_t arp_valid_offset = 0x1100;
-// constexpr std::size_t udp_theirIP_offset = 0x0810;
-// constexpr std::size_t udp_theirPort_offset = 0x0890;
-// constexpr std::size_t udp_myPort_offset = 0x0910;
-// constexpr std::size_t udp_valid_offset = 0x0990;
-// constexpr std::size_t udp_number_sockets = 0x0A10;
-// constexpr std::size_t udp_in_packets = 0x04D0;
-// constexpr std::size_t udp_out_packets = 0x0500;
-// constexpr std::size_t udp_app_in_packets = 0x0518;
-// constexpr std::size_t udp_app_out_packets = 0x04E8;
-// 
-// constexpr std::size_t udp_in_bytes = 0x04C8;
-// constexpr std::size_t udp_out_bytes = 0x04F8;
-// constexpr std::size_t udp_app_in_bytes = 0x0510;
-// constexpr std::size_t udp_app_out_bytes = 0x04E0;
-// 
-// constexpr std::size_t ethhi_out_bytes = 0x0498;
-// constexpr std::size_t eth_out_bytes = 0x04B0;
+const unsigned int NUM_SOCKETS_HW       = 0x0A10;
+const unsigned int UDP_TI_OFFSET        = 0x0810;
+const unsigned int UDP_TP_OFFSET        = 0x0890;
+const unsigned int UDP_MP_OFFSET        = 0x0910;
+const unsigned int UDP_VA_OFFSET        = 0x0990;
 
 class cmac{
 private:
@@ -117,19 +98,19 @@ public:
         if (is_self_ip_address_set == false){
             return -1;
         }
-        uint32_t their_ip_offset = 0x10 + id * 8;
-        uint32_t their_port_offset = their_ip_offset + 16 * 8;
-        uint32_t my_port_offset = their_port_offset + 16 * 8;
-        uint32_t valid_offset = my_port_offset + 16 * 8;
+        uint32_t their_ip_offset = UDP_TI_OFFSET + id * 8;
+        uint32_t their_port_offset = UDP_TP_OFFSET + id * 8;
+        uint32_t my_port_offset = UDP_MP_OFFSET + id * 8;
+        uint32_t valid_offset = UDP_VA_OFFSET + id * 8;
 
-        inst.write_register(UDP_OFFSET + their_ip_offset, socket_info.their_ip);
-        inst.write_register(UDP_OFFSET + their_port_offset, socket_info.their_port);
-        inst.write_register(UDP_OFFSET + my_port_offset, socket_info.my_port);
+        inst.write_register(their_ip_offset, socket_info.their_ip);
+        inst.write_register(their_port_offset, socket_info.their_port);
+        inst.write_register(my_port_offset, socket_info.my_port);
         if (socket_info.valid){
-            inst.write_register(UDP_OFFSET + valid_offset, 0xFFFFFFFF);
+            inst.write_register(valid_offset, 0xFFFFFFFF);
         }
         else{
-            inst.write_register(UDP_OFFSET + valid_offset, 0);
+            inst.write_register(valid_offset, 0);
         }
 
         return 0;
@@ -143,17 +124,15 @@ public:
         if (id == -1) {
             int num_of_sockets = get_hardware_sockets_number();
             for (int i = 0; i < num_of_sockets; i++){
-                uint32_t their_ip_offset = 0x10 + i * 8;
-                uint32_t valid_offset = their_ip_offset + 16 * 8 * 3;
+                uint32_t valid_offset = UDP_VA_OFFSET + id * 8;
 
-                inst.write_register(UDP_OFFSET + valid_offset, false);
+                inst.write_register(valid_offset, false);
             }
         }
         else{
-            uint32_t their_ip_offset = 0x10 + id * 8;
-            uint32_t valid_offset = their_ip_offset + 16 * 8 * 3;
+            uint32_t valid_offset = UDP_VA_OFFSET + id * 8;
 
-            inst.write_register(UDP_OFFSET + valid_offset, true);
+            inst.write_register(valid_offset, true);
         }
         return 0;
     }
@@ -164,10 +143,9 @@ public:
             return -1;
         }
 
-        uint32_t their_ip_offset = 0x10 + id * 8;
-        uint32_t valid_offset = their_ip_offset + 16 * 8 * 3;
+        uint32_t valid_offset = UDP_VA_OFFSET + id * 8;
 
-        inst.write_register(UDP_OFFSET + valid_offset, false);
+        inst.write_register(valid_offset, false);
 
         return 0;
     }

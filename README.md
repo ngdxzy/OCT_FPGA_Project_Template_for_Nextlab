@@ -123,23 +123,17 @@ Head FPGA, sending and receiving data.
 ![schematic](./figures/Head_schematic.png)
 
 ### bit_container_1
-Tail FPGA, looping back data, switch the odd and even sockets.
-![schematic](./figures/Node_schematic.png)
+Tail FPGA, passing through the data. 
+![schematic](./figures/Tail_schematic.png)
 
 ### bit_container_2
-Tail FPGA, looping back data, switch the odd and even sockets.
-![schematic](./figures/Tail_schematic.png)
+Node FPGA, looping back data, switch the odd and even sockets.
+![schematic](./figures/Node_schematic.png)
 
 ## Infrastructure kernels
 
 ### auto_data_pack
 The network layer sends at most 1408 Bytes for a UDP packet, which is 22 AXI-Stream transitions (512 bits/ 64 Bytes). TLAST signal should be set for the every 22 transitions or the last transition of the data (Must be a multiple of 64 Bytes). The purpose of the kernel is to make the Network layer totally transparent to users. It has one reconfigurable port ``desitination`` (specifying which socket should the data been sent to) mapped at ```0x10``` on AXI-Lite interface. Then, it has a 512 bits stream in without side channels connecting to the user kernel and a 512 bits stream out whith side channels connecting to the Network layer. It automatically set the tlast bit every 1408 Bytes. If the 1408 Bytes is not completed, it will send a empty data with TLAST = 1 after 1024 cycles to let the Network layer send the current data that have been received.
-
-### packet_filter
-The network layer always sends an extra 64 Bytes (512 bit) AXI-Stream transition every UDP packet. If not handled, it will pollute the data. The figure shows the actully data received when sending 1408 Bytes:
-![extra](./figures/extra.png)
-
-As you can see, we should expect 22 transitions but 23 occured. It is lucky that we can easily filter it out as the TKEEP is not all 1 and the TLAST is not 0.
 
 ### packet_switch_tx
 

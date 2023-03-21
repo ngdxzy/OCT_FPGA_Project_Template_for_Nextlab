@@ -8,9 +8,6 @@
 
 #include "fileops.h"
 
-// My IP address: 192.168.1.1 
-// Their IP address: 192.168.1.2 
-// GATEWAY: 192.168.1.255
 #define MY_IP_ADDR 0xC0A80101
 #define THEIR_IP_ADDR 0xC0A80102
 #define IP_GATEWAY 0xC0A801FF
@@ -161,14 +158,14 @@ int main(int argc, char* argv[]){
     rx_buffer_1.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
     rx_buffer_1.read(text_rx_1);
 
-    printf("************************************************\n");
+    printf("***************Rx Kernel 0**********************\n");
     for (int i = 0; i < packet_size_in_byte; i++){
         printf("%c", text_rx_0[i]);
         if ((i > 0) && (i % 64 == 0)){
             printf("\n");
         }
     }
-    printf("\n************************************************\n");
+    printf("\n***************Rx Kernel 1**********************\n");
     for (int i = 0; i < packet_size_in_byte; i++){
         printf("%c", text_rx_1[i]);
         if ((i > 0) && (i % 64 == 0)){
