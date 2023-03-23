@@ -136,11 +136,13 @@ The register mapping of the Network layer can be found in ```host_src/networking
 
 The ```host_src/networking/udp_setup.cpp``` is provided to set up the network layer. After ```make network```, user can run ```./udp_setup <bit_container.xclbin> <conf_file> <cmac_id>``` to set up the nextwork layer. the configuration file is very simple as shown below:
 
- 192.168.144.20
- 60002:192.168.144.10:50002
- 60003:192.168.144.10:50003
- 50000:192.168.144.30:60002
- 50001:192.168.144.30:60003
+```tcl
+    192.168.144.20
+    60002:192.168.144.10:50002
+    60003:192.168.144.10:50003
+    50000:192.168.144.30:60002
+    50001:192.168.144.30:60003
+```
 
 The first row is My IP. The following rows are ```<My prot>:<Their IP>:<Their port>```.
 
@@ -155,6 +157,10 @@ This kernel combines two streams with different destinations into one single str
 ### packet_switch_rx
 
 This kernel separates the input stream from the Network layer (two different sockets could be receiving data) into two output streams so that they can be connected to two user kernels separately. Currently, the last bit of 'My port' is used to separate it; the data from the even port number socket is sent to stream_out_0 and that from the odd port number is sent to stream_out_1. This kernel together with packet_switch_tx kernel allows two channel of data connections between two FPGAs.
+
+## User IPs
+
+With the infrastructure IPs, the only thing left for the user is to create 512 bits stream interface. This is a strong requirement and users may need to use parallel-to-serial and serial-to-parallel IPs to realize that. Note that Vitis tool only checks the AXI stream data width during linking, which means the user can have a structure on the interface as long as the data width is 512. This trick can also be used to do variable-type transformations.
 
 # Template project experiment flow
 
