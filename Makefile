@@ -7,8 +7,6 @@ XILINX_XRT ?= /opt/xilinx/xrt
 XILINX_VIVADO ?= /tools/Xilinx/Vivado/2021.2
 XILINX_HLS_INCLUDES ?= /tools/Xilinx/Vitis_HLS/2021.2/include
 
-JOBS ?= 8
-
 # Platform path
 VITIS_PLATFORM = xilinx_u280_xdma_201920_3
 
@@ -16,8 +14,6 @@ VITIS_PLATFORM = xilinx_u280_xdma_201920_3
 PRJ_NAME ?= demo
 TARGET ?= hw
 
-# Interface
-INTERFACE ?= 01
 
 # Host source files
 HOST_SRC_DIR ?= host_src

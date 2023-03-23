@@ -7,8 +7,7 @@ XILINX_XRT ?= /opt/xilinx/xrt
 XILINX_VIVADO ?= /tools/Xilinx/Vivado/2021.2
 XILINX_HLS_INCLUDES ?= /tools/Xilinx/Vitis_HLS/2021.2/include
 
-CONTAINER_ID := 0
-JOBS ?= 8
+CONTAINER_ID = $(patsubst bit_container_%,%,$(shell basename $(CURDIR)))
 
 # Platform path
 VITIS_PLATFORM = xilinx_u280_xdma_201920_3

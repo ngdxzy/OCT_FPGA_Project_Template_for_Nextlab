@@ -158,21 +158,21 @@ int main(int argc, char* argv[]){
     rx_buffer_1.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
     rx_buffer_1.read(text_rx_1);
 
-    printf("***************Rx Kernel 0**********************\n");
+    printf("************************* Rx Kernel 0 **************************\n");
     for (int i = 0; i < packet_size_in_byte; i++){
         printf("%c", text_rx_0[i]);
         if ((i > 0) && (i % 64 == 0)){
             printf("\n");
         }
     }
-    printf("\n***************Rx Kernel 1**********************\n");
+    printf("\n************************* Rx Kernel 1 **************************\n");
     for (int i = 0; i < packet_size_in_byte; i++){
         printf("%c", text_rx_1[i]);
         if ((i > 0) && (i % 64 == 0)){
             printf("\n");
         }
     }
-    printf("\n************************************************\n");
+    printf("\n****************************************************************\n");
     FILE* fp = fopen("./data_received_0.txt", "w");
     if (fp == NULL){
         printf("Failed to open data_received.txt");

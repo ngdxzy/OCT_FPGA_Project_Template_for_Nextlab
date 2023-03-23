@@ -54,15 +54,6 @@ clean:
 .PHONY: incremental
 incremental: all
 
-
-# build kernels first, automatic build all kernels
-$(KERNEL_O_DIR)/%.xo: $(KERNEL_SRC_DIR)/%.cpp $(HW_KERNEL_HEADERS)
-	-@mkdir -p $(@D)
-	-@mkdir -p $(LOG_DIR)
-	-@mkdir -p $(REPORT_DIR)
-	-@$(RM) $@
-	$(VPP) $(VPP_OPTS) --compile -I"$(<D)" --kernel $(basename $(@F)) --advanced.misc solution_name=$(basename $(@F)) $(KERNEL_EXT_CONFIG) -o"$@" "$<"
-
 # bulid host finally
 $(HOST_EXE): $(HOST_OBJ)
 	-@mkdir -p $(@D)
