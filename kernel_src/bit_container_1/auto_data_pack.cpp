@@ -48,17 +48,16 @@ void auto_data_pack(unsigned int destination, hls::stream<data_t>& stream_in, hl
         stream_out << o_temp;
         watching_dog = 0; 
     }
-    else{
+    else if (got_data){
         if (watching_dog == 1023){
             pkt o_temp;
             o_temp.data = 0;
             o_temp.keep = 0;
             o_temp.last = 1;
             o_temp.dest = destination;
-            if (got_data){
-                stream_out << o_temp;
-            }
+            stream_out << o_temp;
             watching_dog = 0;
+            pkt_counter  = 0;
             got_data = false;
         }    
         else{

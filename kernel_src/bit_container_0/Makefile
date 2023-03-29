@@ -49,7 +49,7 @@ endif
 
 # set kernel frequency if necessary
 KERNEL_EXT_CONFIG += --kernel_frequency
-KERNEL_EXT_CONFIG += 250
+KERNEL_EXT_CONFIG += 300
 
 # Bit Container Linker Configuration, edit independently
 BC_CONFIG = linker.cfg
