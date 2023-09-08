@@ -2,13 +2,13 @@
 # this file was created by alfred. Do not trust it.
 #
 # tool chain path
-XILINX_VITIS ?= /tools/Xilinx/Vitis/2021.2
+XILINX_VITIS ?= /tools/Xilinx/Vitis/2023.1
 XILINX_XRT ?= /opt/xilinx/xrt
-XILINX_VIVADO ?= /tools/Xilinx/Vivado/2021.2
-XILINX_HLS_INCLUDES ?= /tools/Xilinx/Vitis_HLS/2021.2/include
+XILINX_VIVADO ?= /tools/Xilinx/Vivado/2023.1
+XILINX_HLS_INCLUDES ?= /tools/Xilinx/Vitis_HLS/2023.1/include
 
 # Platform path
-VITIS_PLATFORM = xilinx_u280_xdma_201920_3
+VITIS_PLATFORM = xilinx_u280_gen3x16_xdma_1_202211_1
 
 # Project Name
 PRJ_NAME ?= demo
